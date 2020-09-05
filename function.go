@@ -50,6 +50,9 @@ func main() {
 	fmt.Println(sum(values...))
 	fmt.Println(sum(1, 2))
 
+	s := sum
+	fmt.Println(s(1, 2))
+
 }
 
 func top5(arr []int) (one int, two int, three int) {

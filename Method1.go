@@ -112,4 +112,10 @@ func main() {
 
 	a.Distance(*b.Point)
 
+	// 方法变量与表达式
+	c := Point{1, 2}
+	d := Point{2, 4}
+	distanceC := c.Distance // 方法变量
+	fmt.Println(distanceC((d)))
+
 }

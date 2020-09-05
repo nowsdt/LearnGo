@@ -2,114 +2,74 @@ package main
 
 import (
 	"fmt"
-	"image/color"
-	"math"
+	"sync"
+	"time"
 )
 
-type Point struct {
-	X, Y float64
+/*var (
+	mu sync.Mutex
+	mapping = make(map[string]string)
+)
+
+func Lookup(key string) string  {
+	mu.Lock()
+	v := mapping[key]
+	mu.Unlock()
+	return v
+}*/
+
+var cache = struct {
+	sync.Mutex
+	mapping map[string]string
+}{
+	mapping: make(map[string]string),
 }
 
-func Distance(p, q Point) float64 {
-	return math.Hypot(q.X-p.X, q.Y-p.Y)
+func Lookup(key string) string {
+	cache.Lock()
+	v := cache.mapping[key]
+	cache.Unlock()
+	return v
 }
 
-//Point类型的方法
-func (p Point) Distance(q Point) float64 {
-	return math.Hypot(q.X-p.X, q.Y-p.Y)
+func print(s string) {
+	fmt.Println(s)
 }
 
-type Path []Point
-
-func (path Path) Distance() float64 {
-	sum := 0.0
-	for i := range path {
-		if i > 0 {
-			sum += path[i-1].Distance(path[i])
-		}
-	}
-	return sum
+type Rocket struct {
 }
 
-// 传值函数
-func modify(p int) {
-	p = 10
-}
-
-// 指针函数
-func modifyP(p *int) {
-	*p = 10
-}
-
-// 指针方法
-func (p *Point) ScaleBy(factor float64) {
-	p.X *= factor
-	p.Y *= factor
-}
-
-// 结构体内嵌组成类型 方法
-// 内嵌方法编译器会额外生成包装方法来调用bridge
-type ColoredPoint struct {
-	Point
-	Color color.RGBA
-}
-
-type ColoredPointP struct {
-	*Point
-	Color color.RGBA
+func (r *Rocket) Launch() {
+	fmt.Println("launch")
 }
 
 func main() {
-	p := Point{1, 2}
-	q := Point{4, 6}
+	fmt.Println(cache)
+	time.AfterFunc(5*time.Second, func() {
+		print("go")
+	})
 
-	fmt.Println(Distance(p, q))
-	fmt.Println(p.Distance(q))
+	r := new(Rocket)
+	time.AfterFunc(7*time.Second, func() {
+		r.Launch()
+	})
 
-	perim := Path{
-		{1, 1},
-		{5, 1},
-		{5, 4},
-		{1, 1},
-	}
+	fmt.Printf("%T", r.Launch) // 方法变量
+	time.AfterFunc(9*time.Second, r.Launch)
 
-	fmt.Println(perim.Distance())
+	/*	p := Point{1, 2}
+		distance := Point.Distance
+		// 方法表达式， 第一个参数是接受者
+		fmt.Println(distance(p, p))
 
-	i := 15
-	modify(i)
-	fmt.Println("i:", i)
-	modifyP(&i)
-	fmt.Println("i:", i)
+		distanceP := (*Point).Distance
+		// 方法表达式， 第一个参数是接受者
+		fmt.Println(distanceP(&p, p)) */
 
-	fmt.Println(p)
-	// 报错
-	//&p.ScaleBy(10)
-	(&p).ScaleBy(10)
-	// 编译器会对变量进行&p的隐式转换
-	p.ScaleBy(10)
-	fmt.Println(p)
+	// 方法变量
+	var op func(p, q Point) Point
 
-	var cp ColoredPoint
-	cp.X = 1
-	fmt.Println(cp.Point.X)
-	cp.Point.Y = 2
-	fmt.Println(cp.Y)
-
-	red := color.RGBA{255, 0, 0, 255}
-	blue := color.RGBA{0, 0, 255, 255}
-	var cpRed = ColoredPoint{Point{1, 1}, red}
-	var cpBlue = ColoredPoint{Point{1, 1}, blue}
-
-	fmt.Println(cpRed.Distance(cpBlue.Point))
-
-	cpRed.ScaleBy(2)
-	cpBlue.ScaleBy(2)
-
-	fmt.Println(cpRed.Distance(cpBlue.Point))
-
-	a := ColoredPointP{&Point{1, 1}, red}
-	b := ColoredPointP{&Point{1, 1}, blue}
-
-	a.Distance(*b.Point)
+	fmt.Println(op)
+	time.Sleep(20 * time.Second)
 
 }
