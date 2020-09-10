@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"runtime"
 	"sort"
 	"time"
 )
@@ -53,6 +55,51 @@ func main() {
 	s := sum
 	fmt.Println(s(1, 2))
 
+	i := 0
+	defer fmt.Println("defer", i)
+	i++
+
+	f1 := func(i, j int) { fmt.Println("匿名函数1", i, j) }
+	f1(1, 2)
+	// 直接调用的匿名函数  js中叫立即函数
+	func(i, j, k int) { fmt.Println("匿名函数2", i, j, k) }(3, 6, 9)
+	// 匿名函数的值 是一个内存地址
+	fmt.Println(f1)
+
+	f2 := func() (ret int) {
+		defer func() {
+			ret++
+		}()
+		return 1
+	}
+
+	fmt.Println(f2())
+
+	// make an Add2 function, give it a name p2, and call it:
+	p2 := Add2()
+	fmt.Printf("Call Add2 for 3 gives: %v\n", p2(3))
+	// make a special Adder function, a gets value 2:
+	TwoAdder := Adder(2)
+	fmt.Printf("The result is: %v\n", TwoAdder(3))
+
+	where := func() {
+		caller, file, line, _ := runtime.Caller(1)
+		log.Printf("%s:%s:%d", caller, file, line)
+	}
+
+	where()
+}
+
+func Add2() func(b int) int {
+	return func(b int) int {
+		return b + 2
+	}
+}
+
+func Adder(a int) func(b int) int {
+	return func(b int) int {
+		return a + b
+	}
 }
 
 func top5(arr []int) (one int, two int, three int) {

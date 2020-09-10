@@ -3,10 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 const appName = "tomcat"
 const AppName = "tomcat"
+
+// 全局变量允许声明不使用
+var pname = "lucy"
 
 func main() {
 	const (
@@ -59,6 +63,25 @@ func main() {
 	q := new(int)
 	*q = 15
 	fmt.Println(*q)
+
+	z := 10
+	y := z // 值copy
+	y = 15
+	fmt.Println(&z, &y)
+	fmt.Println(z, y)
+	z, y = y, z
+	fmt.Println(z, y)
+
+	//类型别名得到的新类型并非和原类型完全相同，新类型不会拥有原类型所附带的方法
+	type TZ string
+
+	var a1, b1 TZ = "lucya", "tomb"
+	fmt.Println(a1, b1)
+	fmt.Println("hello \\n")
+
+	fields := strings.Fields("h l,w,ld")
+	fmt.Println(fields)
+	fmt.Printf("%p", fields)
 
 }
 
