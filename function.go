@@ -88,6 +88,30 @@ func main() {
 	}
 
 	where()
+
+	a := [...]string{"a", "b", "c", "d"}
+	for i := range a {
+		fmt.Println("Array item", i, "is", a[i])
+	}
+
+	fmt.Printf("%T\n", a)
+
+	items := [...]int{10, 20, 30, 40, 50}
+
+	itemSlice := items[:]
+	fmt.Println("itemSlice before:", itemSlice)
+	itemSlice = append(itemSlice[:1], itemSlice[2:]...)
+	fmt.Println("itemSlice after:", itemSlice)
+	for idx, item := range items {
+		item *= 2
+		if idx == len(items)-1 {
+			defer fmt.Println("item", item)
+		}
+	}
+	fmt.Println(items)
+
+	ints := items[0:5]
+	fmt.Println(len(ints))
 }
 
 func Add2() func(b int) int {
