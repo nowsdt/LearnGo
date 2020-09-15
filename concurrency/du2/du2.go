@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,8 +9,22 @@ import (
 	"time"
 )
 
+var done = make(chan struct{})
+
+func canceled() bool {
+	select {
+	case <-done:
+		return true
+	default:
+		return false
+	}
+}
+
 func walkDir(dir string, n *sync.WaitGroup, fileSizes chan<- int64) {
 	defer n.Done()
+	if canceled() {
+		return
+	}
 
 	for _, entry := range dirents(dir) {
 		if entry.IsDir() {
@@ -27,6 +40,12 @@ func walkDir(dir string, n *sync.WaitGroup, fileSizes chan<- int64) {
 var sema = make(chan struct{}, 20)
 
 func dirents(dir string) []os.FileInfo {
+	select {
+	case sema <- struct{}{}:
+	case <-done:
+		return nil
+	}
+
 	sema <- struct{}{}
 	defer func() {
 		<-sema
@@ -41,41 +60,45 @@ func dirents(dir string) []os.FileInfo {
 	return entries
 }
 
-var verbose = flag.Bool("v", false, "show berbose progress messages")
-
 func main() {
-	flag.Parse()
-	roots := flag.Args()
+	/*	flag.Parse()
+		roots := flag.Args()*/
+	roots := os.Args[1:]
 
 	if len(roots) == 0 {
 		roots = []string{"."}
 	}
 
+	go func() {
+		read, _ := os.Stdin.Read(make([]byte, 1))
+		fmt.Println("read:", read)
+		close(done)
+	}()
+
 	fileSizes := make(chan int64)
 	var n sync.WaitGroup
-	go func() {
-		for _, root := range roots {
-			n.Add(1)
-			go walkDir(root, &n, fileSizes) // 一个walkDir 遍历dD: 39s
-		}
-	}()
+	for _, root := range roots {
+		n.Add(1)
+		go walkDir(root, &n, fileSizes) // 一个walkDir 遍历dD: 39s
+	}
 
 	go func() {
 		n.Wait()
 		close(fileSizes)
 	}()
 
-	var tick <-chan time.Time
-
-	if *verbose {
-		tick = time.Tick(500 * time.Millisecond)
-	}
+	tick := time.Tick(500 * time.Millisecond)
 
 	var nFiles, nBytes int64
 
 loop:
 	for {
 		select {
+		case <-done:
+			for range fileSizes {
+
+			}
+			return
 		case size, ok := <-fileSizes:
 			if !ok {
 				break loop // fileSize 关闭
