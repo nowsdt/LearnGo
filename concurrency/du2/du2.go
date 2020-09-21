@@ -45,8 +45,11 @@ func dirents(dir string) []os.FileInfo {
 	case <-done:
 		return nil
 	}
-
-	sema <- struct{}{}
+	// FIXME
+	//fmt.Println("try to get")
+	//sema <- struct{}{}  //多这一行会导致程序进行不下去
+	//fmt.Println("success got")
+	//fmt.Println("got")
 	defer func() {
 		<-sema
 	}()
@@ -74,6 +77,13 @@ func main() {
 		fmt.Println("read:", read)
 		close(done)
 	}()
+
+	/*	go func() {
+		for {
+			time.Sleep(2 * time.Second)
+			fmt.Println("sem.len:", len(sema))
+		}
+	}()*/
 
 	fileSizes := make(chan int64)
 	var n sync.WaitGroup
