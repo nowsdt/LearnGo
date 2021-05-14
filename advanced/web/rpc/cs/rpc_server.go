@@ -23,7 +23,6 @@ func main() {
 	if e != nil {
 		log.Fatal("Starting RPC-server -listen error:", e)
 	}
-
 	log.Println("rpc server started")
 	go http.Serve(listener, nil)
 	time.Sleep(1000e9)

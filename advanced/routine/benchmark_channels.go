@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 func BenchmarkChannelSync(b *testing.B) {
@@ -31,6 +32,7 @@ func BenchmarkChannelBuffered(b *testing.B) {
 	for range ch {
 
 	}
+	time.Sleep(2 * time.Second)
 }
 
 func main() {
