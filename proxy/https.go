@@ -4,11 +4,17 @@ import (
 	"crypto/tls"
 	"flag"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"time"
 )
+
+type DataModel struct {
+	Status int `json:"status"`
+}
 
 func handleTunneling(w http.ResponseWriter, r *http.Request) {
 	//设置超时防止大量超时导致服务器资源不大量占用
@@ -31,6 +37,7 @@ func handleTunneling(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
 	}
 
+	tag(w)
 	go transfer(dest_conn, client_conn)
 	go transfer(client_conn, dest_conn)
 }
@@ -51,6 +58,7 @@ func handleHTTP(w http.ResponseWriter, req *http.Request) {
 	defer resp.Body.Close()
 	//把目标服务器的响应header复制
 	copyHeader(w.Header(), resp.Header)
+	tag(w)
 	w.WriteHeader(resp.StatusCode)
 	io.Copy(w, resp.Body)
 }
@@ -79,12 +87,21 @@ func main() {
 		log.Fatal("Protocol must be either http or https")
 	}
 
+	// https://km.sankuai.com/api/operationHistory/log/936304886?operationLogType=1
+	// {"status":0,"data":{"modifier":"zhouyuanke","modifierUid":5607184,"modifyTime":1625103986000,"version":1}}
 	pair, _ := tls.X509KeyPair([]byte(pemPath), []byte(keyPath))
 	server := &http.Server{
 		Addr:      ":8888",
 		TLSConfig: &tls.Config{Certificates: []tls.Certificate{pair}},
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			log.Printf("received request %s  [%s] \n", r.Method, r.RequestURI)
+			log.Printf("received: %s %s\n", r.Method, r.RequestURI)
+
+			if r.RequestURI == "/proxy.pac" {
+				w.Header().Add("Content-Type", "application/x-ns-proxy-autoconfig")
+				w.Write(readPac())
+				return
+			}
+
 			if r.Method == http.MethodConnect {
 				//支持https websocket deng ... tcp
 				handleTunneling(w, r)
@@ -106,6 +123,17 @@ func main() {
 		} else {
 			log.Fatal(server.ListenAndServeTLS(pemPath, keyPath))
 		}*/
+}
+
+func readPac() []byte {
+	file, _ := os.Open("/Users/star/dev_env/spkg/proxy.pac")
+	content, _ := ioutil.ReadAll(file)
+	defer file.Close()
+	return content
+}
+
+func tag(w http.ResponseWriter) {
+	w.Header().Add("key-s", "p")
 }
 
 func init() {
