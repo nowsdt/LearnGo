@@ -8,14 +8,15 @@ type Person struct {
 }
 
 func main() {
-	person := &Person{"tom", "beijing", 20}
-	fmt.Println(person.name)
-	fmt.Println(person)
 
-	const table = "TRUNCATE TABLE user_score_history"
+	//DROP INDEX idx_createtime_producttype,
+	//DROP INDEX idx_origin_orderid,
+	//DROP INDEX idx_username
 
-	for i := 0; i < 50; i++ {
-		fmt.Printf("%s%v;\n", table, i)
+	str := "ALTER TABLE order_info_%d DROP INDEX idx_username,DROP INDEX idx_origin_orderid, DROP INDEX idx_createtime_producttype;\n"
+	//str2 := "ALTER TABLE xproduct_ext_info_%d DROP INDEX idx_productcode,DROP INDEX idx_abnormal_reason;\n"
+	for i := 0; i < 128; i++ {
+		//fmt.Printf(str, i)
+		fmt.Printf(str, i)
 	}
-
 }
