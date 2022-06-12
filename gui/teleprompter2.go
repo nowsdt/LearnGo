@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"gioui.org/text"
 	"image"
 	"image/color"
 	"io/ioutil"
@@ -30,7 +32,7 @@ var paragraphList []string
 
 func main() {
 	// Part 1 - Read from file
-	f, err := ioutil.ReadFile("/Users/star/go_ws/LearnGo/gui/speech.txt")
+	f, err := ioutil.ReadFile("E:\\GoWS\\LearnGo\\gui\\speech.txt")
 	if err == nil {
 		// Convert whole text into a slice of strings.
 		paragraphList = strings.Split(string(f), "\n")
@@ -92,6 +94,8 @@ func draw(w *app.Window) error {
 		switch e := e.(type) {
 		// A keypress?
 		case key.Event:
+			fmt.Println("key.Event", e)
+
 			if e.State == key.Press {
 				// To set increment
 				var stepSize int = 1
@@ -112,6 +116,7 @@ func draw(w *app.Window) error {
 				// To turn on/off autoscroll, and set the scrollspeed
 				if e.Name == key.NameSpace {
 					autoscroll = !autoscroll
+					fmt.Println("autoscroll", autoscroll)
 					if autospeed == 0 {
 						autoscroll = true
 						autospeed++
@@ -158,6 +163,8 @@ func draw(w *app.Window) error {
 
 		// A mouse event?
 		case pointer.Event:
+			fmt.Println("pointer.Event", e)
+
 			if e.Type == pointer.Scroll {
 				var stepSize int = 1
 				if e.Modifiers == key.ModShift {
@@ -175,6 +182,8 @@ func draw(w *app.Window) error {
 
 		// A re-render request?
 		case system.FrameEvent:
+			fmt.Println("system.FrameEvent", e)
+
 			// ops are the operations from the UI
 			var ops op.Ops
 
@@ -213,14 +222,17 @@ func draw(w *app.Window) error {
 			// 1) First the margins ...
 			margins.Layout(gtx,
 				func(gtx C) D {
+					//fmt.Println(paragraphList)
 					// 2) ... then the list inside those margins ...
 					return visList.Layout(gtx, len(paragraphList),
+
 						// 3) ... where each paragraph is a separate item
 						func(gtx C, index int) D {
 							// One label per paragraph
 							paragraph := material.Label(th, unit.Sp(float32(fontSize)), paragraphList[index])
+							//fmt.Println(index,  paragraphList[index])
 							// The text is centered
-							paragraph.Alignment = 2
+							paragraph.Alignment = text.Middle
 							// Return the laid out paragraph
 							return paragraph.Layout(gtx)
 						},
@@ -241,6 +253,9 @@ func draw(w *app.Window) error {
 		// Shutdown?
 		case system.DestroyEvent:
 			return e.Err
+		default:
+			fmt.Println("default.Event", e)
+
 		}
 	}
 	return nil

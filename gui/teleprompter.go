@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gioui.org/app"
 	"gioui.org/font/gofont"
 	"gioui.org/io/key"
@@ -27,7 +26,7 @@ var lines []string
 
 func main() {
 
-	f, err := ioutil.ReadFile("/Users/star/go_ws/LearnGo/gui/speech.txt")
+	f, err := ioutil.ReadFile("E:\\GoWS\\LearnGo\\gui\\speech.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,83 +65,112 @@ func draw(w *app.Window) error {
 
 	for e := range w.Events() {
 		switch e := e.(type) {
-		case key.Event:
-			if e.State == key.Press {
-				var stepSize int = 1
-				if e.Modifiers == key.ModShift {
-					stepSize = 10
-				}
 
-				if e.Name == key.NameDownArrow || e.Name == "J" {
-					scrollY = scrollY + stepSize*4
-				}
-
-				if e.Name == key.NameUpArrow || e.Name == "K" {
-					scrollY = scrollY - stepSize*4
-					if scrollY < 0 {
-						scrollY = 0
-					}
-				}
-
-				if e.Name == key.NameSpace {
-					autoScroll = !autoScroll
-					if autoSpeed == 0 {
-						autoScroll = true
-						autoSpeed++
-					}
-				}
-
-				if e.Name == "F" {
-					autoScroll = true
-					autoSpeed++
-				}
-				if e.Name == "S" {
-					if autoSpeed > 0 {
-						autoSpeed--
-					}
-				}
-
-				if e.Name == "N" {
-					textWidth = textWidth - stepSize*10
-				}
-
-				if e.Name == "+" {
-					fontSize = fontSize + stepSize
-				}
-
-				if e.Name == "-" {
-					fontSize = fontSize - stepSize
-				}
-				if e.Name == "U" {
-					focusBarY = focusBarY - stepSize
-				}
-				if e.Name == "D" {
-					focusBarY = focusBarY + stepSize
-				}
-
-				w.Invalidate()
-			}
-
-		case pointer.Event:
-			if e.Type == pointer.Scroll {
-				var stepSize int = 1
-
-				if e.Modifiers == key.ModShift {
-					stepSize = 3
-				}
-
-				thisScroll := int(e.Scroll.Y)
-				scrollY = scrollY + thisScroll*stepSize
-
-				if scrollY < 0 {
-					scrollY = 0
-				}
-
-				w.Invalidate()
-			}
 		case system.FrameEvent:
 			var ops op.Ops
 			gtx := layout.NewContext(&ops, e)
+
+			// https://git.sr.ht/~eliasnaur/gio-example/tree/b8e926ba1ef2/item/gophers/main.go
+			key.InputOp{
+				Tag: w,
+				Keys: key.Set(strings.Join(
+					[]string{key.NameSpace, key.NameShift, key.NameUpArrow, key.NameDownArrow, "J", "K", "F", "S", "N", "+", "-", "Shift-A"},
+					"|")),
+			}.Add(gtx.Ops)
+
+			// https://git.sr.ht/~eliasnaur/gio-example/tree/b8e926ba1ef2/item/opengl/main.go
+			pointer.InputOp{
+				Tag:   w,
+				Types: pointer.Scroll,
+			}.Add(gtx.Ops)
+
+			for _, event := range gtx.Events(w) {
+				log.Println(event)
+				switch event := event.(type) {
+				case key.Event:
+					log.Println(event.String())
+
+					if event.State == key.Release {
+						var stepSize int = 1
+						if event.Modifiers == key.ModShift {
+							stepSize = 10
+						}
+
+						if event.Name == key.NameDownArrow || event.Name == "J" {
+							scrollY = scrollY + stepSize*4
+						}
+
+						if event.Name == key.NameUpArrow || event.Name == "K" {
+							scrollY = scrollY - stepSize*4
+							if scrollY < 0 {
+								scrollY = 0
+							}
+						}
+
+						if event.Name == key.NameSpace {
+							autoScroll = !autoScroll
+							if autoSpeed == 0 {
+								autoScroll = true
+								autoSpeed++
+							}
+						}
+
+						if event.Name == "F" {
+							autoScroll = true
+							autoSpeed++
+						}
+						if event.Name == "S" {
+							if autoSpeed > 0 {
+								autoSpeed--
+							}
+						}
+
+						if event.Name == "N" {
+							textWidth = textWidth - stepSize*10
+						}
+
+						if event.Name == "+" {
+							fontSize = fontSize + stepSize
+						}
+
+						if event.Name == "-" {
+							fontSize = fontSize - stepSize
+						}
+						if event.Name == "U" {
+							focusBarY = focusBarY - stepSize
+						}
+						if event.Name == "D" {
+							focusBarY = focusBarY + stepSize
+						}
+
+						w.Invalidate()
+					}
+				case pointer.Event:
+					log.Println(event.Type, event.Modifiers, event.Source, event.Scroll, event.PointerID, event.Position)
+
+					if event.Type == pointer.Scroll {
+						var stepSize int = 1
+
+						if event.Modifiers == key.ModShift {
+							stepSize = 3
+						}
+
+						thisScroll := int(event.Position.Y)
+						log.Println(scrollY, thisScroll, stepSize)
+						scrollY = scrollY + thisScroll*stepSize
+
+						if scrollY < 0 {
+							scrollY = 0
+						}
+
+						log.Println("scrollY:", scrollY)
+						w.Invalidate()
+					}
+				default:
+					log.Println("point.default", event)
+				}
+			}
+
 			paint.Fill(&ops, color.NRGBA{R: 0xff, G: 0xfe, B: 0xe0, A: 0xff})
 
 			if autoScroll {
@@ -171,7 +199,7 @@ func draw(w *app.Window) error {
 					func(gtx layout.Context, index int) layout.Dimensions {
 						paragraph := material.Label(th, unit.Sp(float32(fontSize)), lines[index])
 						paragraph.Alignment = text.Middle
-						fmt.Println(index, lines[index])
+						//fmt.Println(index, lines[index])
 						return paragraph.Layout(gtx)
 					})
 			})
@@ -183,7 +211,7 @@ func draw(w *app.Window) error {
 
 			stack.Pop()
 
-			fmt.Println(scrollY, focusBarY, textWidth, fontSize, autoScroll, autoSpeed)
+			//fmt.Println(scrollY, focusBarY, textWidth, fontSize, autoScroll, autoSpeed)
 
 			e.Frame(gtx.Ops)
 		case system.DestroyEvent:
@@ -192,4 +220,8 @@ func draw(w *app.Window) error {
 	}
 
 	return nil
+}
+
+func init() {
+	log.SetFlags(log.Lshortfile)
 }
