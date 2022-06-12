@@ -12,45 +12,50 @@ import (
 	"gioui.org/unit"
 	"image"
 	"image/color"
+	"os"
 	"time"
 )
 
 func main() {
-	window := app.NewWindow(
-		app.Title("Btn"),
-		app.Size(unit.Dp(400), unit.Dp(800)),
-	)
-	var ops *op.Ops
 
-	changes := time.NewTicker(time.Second)
-	defer changes.Stop()
+	go func() {
+		window := app.NewWindow(
+			app.Title("Btn"),
+			app.Size(unit.Dp(400), unit.Dp(800)),
+		)
+		var ops = new(op.Ops)
 
-	btnOffset := 0
+		changes := time.NewTicker(time.Second)
+		defer changes.Stop()
 
-	for {
-		select {
-		case e := <-window.Events():
-			switch e := e.(type) {
-			case system.DestroyEvent:
-				fmt.Println(e.Err)
-			case system.FrameEvent:
+		btnOffset := 0
 
-				//gtx := layout.NewContext(ops, e)
+		for {
+			select {
+			case e := <-window.Events():
+				switch e := e.(type) {
+				case system.DestroyEvent:
+					fmt.Println(e.Err)
+					os.Exit(0)
+				case system.FrameEvent:
 
-				ops.Reset()
+					//gtx := layout.NewContext(ops, e)
 
-				op.Offset(image.Pt(btnOffset, 0)).Add(ops)
+					ops.Reset()
 
-				doButton(ops, e.Queue)
+					op.Offset(image.Pt(btnOffset, 50)).Add(ops)
 
-				e.Frame(ops)
+					doButton(ops, e.Queue)
 
+					e.Frame(ops)
+
+				}
+			case t := <-changes.C:
+				btnOffset = int(t.Second() % 3 * 100)
+				window.Invalidate()
 			}
-		case t := <-changes.C:
-			btnOffset = int(t.Second() % 3 * 100)
-			window.Invalidate()
 		}
-	}
+	}()
 
 	app.Main()
 }
@@ -70,7 +75,7 @@ func doButton(ops *op.Ops, q event.Queue) {
 		}
 	}
 
-	area := clip.Rect(image.Rect(0, 0, 100, 100)).Push(ops)
+	area := clip.Rect(image.Rect(0, 0, 500, 500)).Push(ops)
 
 	pointer.InputOp{
 		Tag:   tag,
@@ -79,7 +84,7 @@ func doButton(ops *op.Ops, q event.Queue) {
 
 	area.Pop()
 
-	defer clip.Rect{Max: image.Pt(100, 100)}.Push(ops).Pop()
+	defer clip.Rect{Max: image.Pt(200, 200)}.Push(ops).Pop()
 
 	var c color.NRGBA
 
@@ -89,6 +94,8 @@ func doButton(ops *op.Ops, q event.Queue) {
 		c = color.NRGBA{G: 255, A: 255}
 	}
 
+	//clip.Rect{Max: image.Pt(200, 200)}.Push(ops)
 	paint.ColorOp{Color: c}.Add(ops)
 	paint.PaintOp{}.Add(ops)
+
 }

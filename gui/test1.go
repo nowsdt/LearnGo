@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gioui.org/app"
+	"gioui.org/f32"
 	"gioui.org/font/gofont"
 	"gioui.org/io/system"
 	"gioui.org/layout"
@@ -95,13 +96,36 @@ func draw(w *app.Window) error {
 				}.Layout(gtx,
 					layout.Rigid(func(gtx C) D {
 						circle := clip.Ellipse{
-							Min: image.Pt(80, 0),
-							Max: image.Pt(320, 240),
+							Min: image.Pt(300, 0),
+							Max: image.Pt(700, 400),
 						}.Op(gtx.Ops)
 
 						nrgba := color.NRGBA{B: 255, A: 100}
 						paint.FillShape(gtx.Ops, nrgba, circle)
-						d := image.Point{X: 400, Y: 400}
+						d := image.Point{Y: 800}
+						return layout.Dimensions{Size: d}
+					}),
+
+					layout.Rigid(func(gtx C) D {
+
+						op.Offset(image.Pt(100, 100))
+						var eggPath clip.Path
+
+						eggPath.Begin(gtx.Ops)
+
+						p := f32.Pt(200, 300)
+
+						eggPath.LineTo(p)
+
+						eggPath.Close()
+
+						eggArea := clip.Outline{Path: eggPath.End()}.Op()
+						nrgba := color.NRGBA{R: 255, A: 100}
+
+						paint.FillShape(gtx.Ops, nrgba, eggArea)
+
+						d := image.Point{X: 100, Y: 200}
+
 						return layout.Dimensions{Size: d}
 					}),
 
