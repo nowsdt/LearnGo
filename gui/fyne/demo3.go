@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
@@ -17,7 +18,11 @@ func main() {
 	//rectangle(myCanvas)
 	circle(myCanvas)
 
-	w1.Resize(fyne.NewSize(100, 100))
+	myCanvas.SetOnTypedKey(func(event *fyne.KeyEvent) {
+		fmt.Println(event.Name, event.Physical)
+	})
+
+	w1.Resize(fyne.NewSize(400, 300))
 	w1.ShowAndRun()
 }
 
