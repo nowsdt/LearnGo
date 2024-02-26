@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func badCall() {
 	panic("bad end")
@@ -12,8 +15,10 @@ func test() {
 			fmt.Printf("panicing: %s \r\n", e)
 		}
 	}()
-	badCall()
+	//badCall()
 	fmt.Println("after bad call \r\n")
+
+	fmt.Println(time.Now().Add(time.Hour * 34))
 }
 
 func main() {

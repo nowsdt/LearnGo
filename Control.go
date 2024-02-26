@@ -1,9 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func main() {
 	s := 8
+
+	format := time.Now().Format("2006-01-02 15:04:05")
+
+	fmt.Println(format)
 
 	switch s {
 	case 10:

@@ -5,24 +5,11 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"regexp"
 )
 
 func main() {
-	s := "133alhgalghg userId=155 json={JN}"
-	regex := regexp.MustCompile(".{1,12} userId=(.+) json=(.+)")
-	match := regex.MatchString(s)
-
-	if match {
-		submatch := regex.FindAllStringSubmatch(s, -1)
-
-		//fmt.Println(submatch)
-		fmt.Println(submatch[0][0:1])
-		fmt.Println(submatch[0][1:2])
-		fmt.Println(submatch[0][2:3])
-	}
-	open, err := os.Open("P:\\多媒体整理\\20220105\\remove\\新建文件夹\\20220105.txt")
+	open, err := os.Open("/Users/star/go_ws/LearnGo/regex/data.txt")
 
 	fmt.Print(err)
 	reader := bufio.NewReader(open)
@@ -35,11 +22,13 @@ func main() {
 
 		cmd := string(line)
 		fmt.Println(cmd)
+		// #XMDT#{__traceId__=8925812202412258150}#XMDT#
+		regex := regexp.MustCompile(".+#ppp#\\{__traceId__=(.+)\\}.+")
+		match := regex.MatchString(cmd)
 
-		command := exec.Command(cmd)
-		err = command.Start()
-		if err != nil {
-			fmt.Println(err)
+		if match {
+			submatch := regex.FindAllStringSubmatch(cmd, -1)
+			fmt.Println(submatch[0][0])
 		}
 	}
 }

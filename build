@@ -1,0 +1,3 @@
+
+go build -o x -ldflags "-s -w" run.go
+ls -lh
